@@ -44,8 +44,7 @@ public:
 	XmlParse();
 
 
-	///<summary> 
-	///Generates an XmlParser object with the specified file name.
+	///<summary> Generates an XmlParser object with the specified file name.
 	///</summary>
 	///<param name = "fn"> The file name of the source file as a string. </param>
 
@@ -56,6 +55,7 @@ public:
 
 	///<summary>
 	///Parses a cpp file and generates an html document.
+	///line 3 test
 	///</summary>
 	///<return> 
 	///Returns true if the operation is succesful. 
@@ -76,7 +76,7 @@ public:
 	///<summary>
 	///Opens the file and determines whether or not it is valid.
 	///</summary>
-	///<return> Returns true if the operation is succesul. False otherwise.
+	///<return> Returns true if the operation is succesul. False otherwise. </return>
 
 	bool openFile();
 
@@ -96,6 +96,7 @@ public:
 	void parseString(string line, XML_TAGS tags, int index);
 
 private:
+	const string format = "///";
 	string file_name;
 	fstream file_stream;
 	vector<funct_struct> xml_vect;
@@ -108,12 +109,14 @@ private:
 	///<param name  = "
 	///<return> Returns the altered string. Without the slashes </return>
 
-	string cleanString(string cur_line, int AMOUNT_OF_SLASH);
+	string cleanString(string cur_line, string patt);
 
 
-	int indexOfSlash(string cur_line, int AMOUNT_OF_SLASH);
+	//int indexOfSlash(string cur_line, int AMOUNT_OF_SLASH);
 
 	bool endOfTag(string cur_line, XML_TAGS tags);
+
+	
 
 };
 #endif // ! XML_PARSE_H

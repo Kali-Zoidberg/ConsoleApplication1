@@ -1,6 +1,7 @@
 ﻿  XmlParse.cpp
-  Generating Code...
-c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(235): warning C4715: 'XmlParse::endOfTag': not all control paths return a value
-  Skipping... (no relevant changes detected)
-  main.cpp
+c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(33): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(35): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(202): warning C4244: '=': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(215): warning C4244: '=': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(309): warning C4715: 'XmlParse::endOfTag': not all control paths return a value
   ConsoleApplication1.vcxproj -> C:\Users\Chow\source\repos\ConsoleApplication1\Debug\XMLGeneration.exe
