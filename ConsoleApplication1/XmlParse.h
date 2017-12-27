@@ -55,7 +55,6 @@ public:
 
 	///<summary>
 	///Parses a cpp file and generates an html document.
-	///line 3 test
 	///</summary>
 	///<return> 
 	///Returns true if the operation is succesful. 
@@ -87,12 +86,25 @@ public:
 
 
 	bool setFileName(string fn);
+
+	///<summary>
+	///Accumulates the comments between the xml start and end tag.
+	///</summary>
+	///<param name = "start_tag"> The format for the starting tag. </param>
+	///<param name = "end_tag"> The format for the ending tag. </param>
+	///<param name = "beg_line"> The beginning line contaning the starting tag. </param>
+	///<param name = "cur_tag"> The current type of xml_tag we are parsing. </cur_tag>
+	///<param name = "get_index"> The current position of the get pointer in the stream. </param>
+	///<return> Returns the comments between the starting and ending tags. </return>
+	string accumulateComments(string start_tag, string end_tag, string cur_line, XML_TAGS cur_tag, int get_index);
+
 	///<summary>
 	///Parses a valid xml comment.
 	///</summary>
 	///<param name = "line"> Pass the xml formmated line as a string. </param>
 	///<param name = "tag"> The type of xml tag </param> 
 	///<param name = "index"> The beginning point in the line where the comment begins. </param>
+	///<return></return>
 	void parseString(string line, XML_TAGS tags, int index);
 
 private:
@@ -103,7 +115,9 @@ private:
 	int vect_index;
 
 	///<summary>
-	///Removes the Forward slashes from the comments.
+	///Removes a specified pattern from the given string.
+	///Only removes patterns at the beginning of files.
+	///Further support includes remove beginning or replace.
 	///</summary>
 	///<param name = "comm_line"> The comment line passed as a string. </param>
 	///<param name  = "
@@ -114,7 +128,6 @@ private:
 
 	//int indexOfSlash(string cur_line, int AMOUNT_OF_SLASH);
 
-	bool endOfTag(string cur_line, XML_TAGS tags);
 
 	
 
