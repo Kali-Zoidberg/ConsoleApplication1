@@ -1,7 +1,7 @@
 ﻿  XmlParse.cpp
-c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(33): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
 c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(36): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
-c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(39): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(41): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(44): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
   Generating Code...
   Skipping... (no relevant changes detected)
   main.cpp

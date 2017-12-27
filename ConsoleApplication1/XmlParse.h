@@ -14,13 +14,20 @@ enum XML_TAGS
 {
 	SUMMARY, PARAM, RETURN
 };
+
+struct param_struct {
+	string param_name;
+	string param_descript;
+};
+
 struct funct_struct {
 	int num_of_param;
 	string ret_str; //look for type after return found. If void ...
-	vector<string> param_strings;
+	vector<param_struct> param_vect;
 	string summary;
 	string func_name;
 	string ret_type;
+	bool isConstant;
 };
 
 class XmlParse
@@ -44,21 +51,26 @@ public:
 	XmlParse();
 
 
-	///<summary> Generates an XmlParser object with the specified file name.
+	///<summary> 
+	///Generates an XmlParser object with the specified file name.
 	///</summary>
 	///<param name = "fn"> The file name of the source file as a string. </param>
+	
 
 	XmlParse(string fn);
 
 	~XmlParse();
 
 
+	
+
 	///<summary>
 	///Parses a cpp file and generates an html document.
 	///</summary>
-	///<return> 
+	///<return>
 	///Returns true if the operation is succesful. 
 	///</return>
+
 	bool parse();
 
 
@@ -93,7 +105,7 @@ public:
 	///<param name = "start_tag"> The format for the starting tag. </param>
 	///<param name = "end_tag"> The format for the ending tag. </param>
 	///<param name = "beg_line"> The beginning line contaning the starting tag. </param>
-	///<param name = "cur_tag"> The current type of xml_tag we are parsing. </cur_tag>
+	///<param name = "cur_tag"> The current type of xml_tag we are parsing. </param>
 	///<param name = "get_index"> The current position of the get pointer in the stream. </param>
 	///<return> Returns the comments between the starting and ending tags. </return>
 	string accumulateComments(string start_tag, string end_tag, string cur_line, XML_TAGS cur_tag, int get_index);
@@ -104,7 +116,6 @@ public:
 	///<param name = "line"> Pass the xml formmated line as a string. </param>
 	///<param name = "tag"> The type of xml tag </param> 
 	///<param name = "index"> The beginning point in the line where the comment begins. </param>
-	///<return></return>
 	void parseString(string line, XML_TAGS tags, int index);
 
 private:
@@ -120,10 +131,12 @@ private:
 	///Further support includes remove beginning or replace.
 	///</summary>
 	///<param name = "comm_line"> The comment line passed as a string. </param>
-	///<param name  = "
-	///<return> Returns the altered string. Without the slashes </return>
+	///<param name  = "patt"> The string pattern which we wish to remove from the beginning of the file. </param>
+	///<return> Returns the altered string. Without the slashes. </return>
 
 	string cleanString(string cur_line, string patt);
+
+	string removeWhiteSpace(string cur_line);
 
 
 	//int indexOfSlash(string cur_line, int AMOUNT_OF_SLASH);
