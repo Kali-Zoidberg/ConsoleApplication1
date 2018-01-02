@@ -1,8 +1,9 @@
 ﻿  XmlParse.cpp
-c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(36): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
-c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(41): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
-c:\users\chow\source\repos\consoleapplication1\consoleapplication1\xmlparse.cpp(44): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
-  Generating Code...
-  Skipping... (no relevant changes detected)
-  main.cpp
-  ConsoleApplication1.vcxproj -> C:\Users\Chow\source\repos\ConsoleApplication1\Debug\XMLGeneration.exe
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(35): warning C4244: '=': conversion from 'std::streamoff' to 'long', possible loss of data
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(48): warning C4018: '<': signed/unsigned mismatch
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(51): warning C4018: '<': signed/unsigned mismatch
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(93): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(98): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(101): warning C4244: 'argument': conversion from 'std::streamoff' to 'int', possible loss of data
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(146): warning C4244: '=': conversion from 'std::streamoff' to 'long', possible loss of data
+  ConsoleApplication1.vcxproj -> C:\Users\Kali-Zoidberg\Documents\GitHub\ConsoleApplication1\Debug\XMLGeneration.exe

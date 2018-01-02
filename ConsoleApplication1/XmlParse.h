@@ -22,12 +22,15 @@ struct param_struct {
 
 struct funct_struct {
 	int num_of_param;
+	bool isConstant;
+	long get_index;
 	string ret_str; //look for type after return found. If void ...
-	vector<param_struct> param_vect;
 	string summary;
 	string func_name;
 	string ret_type;
-	bool isConstant;
+	string func_decl;
+	vector<param_struct> param_vect;
+
 };
 
 class XmlParse
@@ -44,7 +47,7 @@ class XmlParse
 	overload function
 	Start looking for string::find
 
-
+	look for beginning of the block comment and find the end. mark it and ignore the lines from there when parsing.
 	*/
 public:
 
@@ -61,17 +64,38 @@ public:
 
 	~XmlParse();
 
+	///<summary>
+	///Initializes the funct struct.
+	///</summary>
+	///<return> Returns an initialized funct structure.</return>
 
+	funct_struct initFuncStruct();
+
+	///<summary>
+	///Parses the function names from the source file and creates vectors for each one.
+	///The lines between the functions are then parsed.
+	///</summary>
+	
+	void parseFuncName();
 	
 
 	///<summary>
-	///Parses a cpp file and generates an html document.
+	///Parses a source file and generates an html document.
 	///</summary>
 	///<return>
 	///Returns true if the operation is succesful. 
 	///</return>
 
 	bool parse();
+
+	///<summary>
+	///Parses a source file and stores the xml comment's in a vector format.
+	///</summary>
+	///<param name = "index"> The index of the function whose comments we are parsing. </param>
+	///<return> Returns true if the operation was succesful. </return>
+
+	bool parse(int index);
+
 
 
 	///<summary>

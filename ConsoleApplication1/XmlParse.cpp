@@ -16,14 +16,71 @@ XmlParse::XmlParse(string fn) {
 /*
 find all /// first. and use that as data set. Longer runtime though but easier to parse.
 change the way stuff is stored. when <summary found. summarysytring = from <summary> to </summary> if /// found. remove it.
-so do a dowhile and keep adding each line together until you find </summary> then truncate? no when it's found exit loop.
+so dXmlo a dowhile and keep adding each line together until you find </summary> then truncate? no when it's found exit loop.
 */
+
+void XmlParse::parseFuncName() {
+
+	funct_struct func = initFuncStruct();
+
+	string cur_line = " ";
+	long get_count = 0;
+
+	if (file_stream.fail()) //file hasn't been opened yet.
+		file_stream.open(file_name);
+
+	do {
+
+		getline(file_stream, cur_line);
+		get_count = file_stream.tellg();
+
+		if (cur_line.find("//", 0) == string::npos && cur_line.find('(', 0) != string::npos && cur_line.find(')', 0) != string::npos) { //found ( and ) somewhere in the string. Assume the programmer has the correct file format.
+		
+			func.func_decl = cur_line;
+			func.get_index = get_count;
+
+			xml_vect.push_back(func);
+
+		}
+
+	} while (!file_stream.eof());
+	
+	for (int i = 0; i < xml_vect.size(); ++i) 
+		cout <<"get pointer: " << xml_vect.at(i).get_index << xml_vect.at(i).func_decl << endl;
+	
+	for (int i = 0; i < xml_vect.size(); ++i)
+		parse(i);
+	cout << "size of xml_vect: " << xml_vect.size() << endl;
+
+	file_stream.close();
+}
+
+funct_struct XmlParse::initFuncStruct() {
+
+	funct_struct func;
+	func.get_index = 0;
+	func.func_name = "Not provided.";
+	func.isConstant = false;
+	func.num_of_param = 0;
+	func.ret_str = "Not provided.";
+	func.ret_type = "Constructor";
+	func.func_decl = "Not provided.";
+	func.summary = "Not provided.";
+
+	return func;
+}
+
 bool XmlParse::parse() { //this must handle the vector. Idk how but it should. Maybe 
+
 	funct_struct funk;
 	string cur_line = " ";	
 	int line_size = 0;
 	int fslash_count = 0;
 	bool flag = true;
+
+	if (file_stream.fail()) //file hasn't been opened yet.
+		file_stream.open(file_name);
+
 	do {
 
 		getline(file_stream, cur_line);
@@ -42,21 +99,58 @@ bool XmlParse::parse() { //this must handle the vector. Idk how but it should. M
 		//funk.ret_str = parseString(cur_line, XML_TAGS::RETURN, file_stream.tellg());
 		 if (cur_line.find("///<param name") != string::npos)
 			parseString(cur_line, XML_TAGS::PARAM, file_stream.tellg());
-		// if (cur_line.find("///") == string::npos) { //and have not found tag?
-			 //  now we can push back the vector. 
-			 //push back
-			 //initialize all components to 0
-		//}
-			//funk.param_str = parseString
-		/*if (last_num_of_sums < cur_num_of_sums) {
-			xml_vect.push_back(funk);
-			
-			}
-		*/
+
 	} while (!file_stream.eof());
 	
 	file_stream.close();
 	
+	return true;
+}
+
+bool XmlParse::parse(int index) {
+	
+	int size_of_vect = xml_vect.size();
+	long beg_get_index = 0;
+	long end_get_index = 0;
+	long cur_get_index = 0;
+	char c = ' ';
+	string cur_line = " ";
+
+	if (file_stream.fail()) {//file hasn't been opened yet.
+		file_stream.open(file_name);
+	}
+
+	if (file_stream.fail()) {
+		cout << "we are in error state \n";
+
+	}	
+
+	if (index >= size_of_vect)
+		return false;
+	
+	
+		if (index == 0)
+			beg_get_index = file_stream.beg;
+		else {
+			beg_get_index = xml_vect.at(index - 1).get_index;
+			end_get_index = xml_vect.at(index).get_index - xml_vect.at(index).func_decl.size() - 1;
+		
+			file_stream.seekg(beg_get_index, file_stream.beg); //put's the get and put pointers at the starting point of the function declaration.
+
+			cur_get_index = beg_get_index;
+			cout << "func: " << xml_vect.at(index).func_decl << endl;
+
+			while (cur_get_index < end_get_index && !file_stream.eof() && cur_get_index != -1) { //Loops as long as we do not reach the next function declaration or have not reached the end of the file.
+				file_stream.get(c);
+					cur_line += c;
+				cur_get_index = file_stream.tellg();
+			}
+			cout << cur_line << endl;
+
+	} 
+
+	file_stream.close();
+
 	return true;
 }
 
@@ -69,7 +163,9 @@ bool XmlParse::openFile() {
 		return false;
 	} else {
 
-		parse();
+		parseFuncName();
+	//	parse();
+		file_stream.close();
 
 		return true;
 	}
@@ -85,7 +181,9 @@ bool XmlParse::openFile(string fn) {
 		return false;
 	} else {
 
-		parse();
+		parseFuncName();
+	//	parse();
+		file_stream.close();
 
 		return true;
 	}
@@ -141,6 +239,7 @@ string XmlParse::accumulateComments(string start_tag, string end_tag, string beg
 
 	return tempstr;
 }
+
 string XmlParse::removeWhiteSpace(string cur_line) {
 
 	int start_index = cur_line.find_first_not_of(' ');
