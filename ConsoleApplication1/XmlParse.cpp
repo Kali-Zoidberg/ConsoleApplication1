@@ -1,3 +1,28 @@
+/*
+
+Notes: Runtime is o(n) where n is the number of lines.
+
+TO do: support for constructors.
+	Remove the /// from strings.
+	Tagging from function declaration. Need to get content from between the () to determine # of parameters and their types.
+	block comment ignorance.
+
+Changelog: Added support for pushing back summary names.
+Fixed issue where the file would be opened twice and would cause every other function's comments to be skipped and not stored.
+Added support for return types, function names, return summaries, parameter names and descriptions.
+Added a print function that prints the contents of the function_structure.
+
+Issues: First function's comments not stored properly.
+logical issue with parseCommentBlocks function.
+Return type is a problem with the function names.
+
+Parameter summary for multiple parameters.
+
+Paramater Description:
+
+///<param name  = "patt"> The string pattern which we wish to remove from the beginning of the file.
+*/
+
 #include "stdafx.h"
 #include "XmlParse.h"
 
@@ -13,20 +38,47 @@ XmlParse::XmlParse(string fn) {
 	file_name = fn;
 
 }
-/*
-find all /// first. and use that as data set. Longer runtime though but easier to parse.
-change the way stuff is stored. when <summary found. summarysytring = from <summary> to </summary> if /// found. remove it.
-so dXmlo a dowhile and keep adding each line together until you find </summary> then truncate? no when it's found exit loop.
-*/
+
+void XmlParse::print() {
+	
+	int vect_size = xml_vect.size();
+	int amount_of_param = 0;
+	for (int i = 0; i < vect_size; ++i) {
+		cout << endl;
+		cout << "Function Declaration: " << xml_vect.at(i).func_decl << endl;
+		cout << "Function Name: " << xml_vect.at(i).func_name << endl << endl;
+		cout << "Summary: " << xml_vect.at(i).summary << endl << endl;
+		amount_of_param = xml_vect.at(i).num_of_param;
+
+		cout << "Number of Parameters: " << amount_of_param << endl;
+
+		for (int j = 0; j < amount_of_param; ++j) {
+			cout << "Paramater Name: " << xml_vect.at(i).param_vect.at(j).param_name << endl;
+			cout << "Paramater Description: " << xml_vect.at(i).param_vect.at(j).param_descript << endl << endl;
+		}
+
+		cout << "Constant: ";
+
+		if (xml_vect.at(i).isConstant)
+			cout << "True. \n";
+		else
+			cout << "False. \n";
+		
+		cout << "Return Type: " << xml_vect.at(i).ret_type << endl;
+		cout << "Return Summary: " << xml_vect.at(i).ret_str << endl;
+
+	}
+}
+
 
 void XmlParse::parseFuncName() {
 
-	funct_struct func = initFuncStruct();
+	function_struct func = initFuncStruct();
 
 	string cur_line = " ";
 	long get_count = 0;
 
-	if (file_stream.fail()) //file hasn't been opened yet.
+	if (!file_stream.is_open()) //file hasn't been opened yet.
 		file_stream.open(file_name);
 
 	do {
@@ -40,24 +92,25 @@ void XmlParse::parseFuncName() {
 			func.get_index = get_count;
 
 			xml_vect.push_back(func);
-
 		}
 
 	} while (!file_stream.eof());
 	
-	for (int i = 0; i < xml_vect.size(); ++i) 
-		cout <<"get pointer: " << xml_vect.at(i).get_index << xml_vect.at(i).func_decl << endl;
+	//for (unsigned int i = 0; i < xml_vect.size(); ++i) 
+	//	cout <<"get pointer: " << xml_vect.at(i).get_index << xml_vect.at(i).func_decl << endl;
 	
-	for (int i = 0; i < xml_vect.size(); ++i)
+	for (unsigned int i = 0; i < xml_vect.size(); ++i)
 		parse(i);
-	cout << "size of xml_vect: " << xml_vect.size() << endl;
+//	cout << "size of xml_vect: " << xml_vect.size() << endl;
 
-	file_stream.close();
+	//print();
+
+	//file_stream.close();
 }
 
-funct_struct XmlParse::initFuncStruct() {
+function_struct XmlParse::initFuncStruct() {
 
-	funct_struct func;
+	function_struct func;
 	func.get_index = 0;
 	func.func_name = "Not provided.";
 	func.isConstant = false;
@@ -70,43 +123,6 @@ funct_struct XmlParse::initFuncStruct() {
 	return func;
 }
 
-bool XmlParse::parse() { //this must handle the vector. Idk how but it should. Maybe 
-
-	funct_struct funk;
-	string cur_line = " ";	
-	int line_size = 0;
-	int fslash_count = 0;
-	bool flag = true;
-
-	if (file_stream.fail()) //file hasn't been opened yet.
-		file_stream.open(file_name);
-
-	do {
-
-		getline(file_stream, cur_line);
-	
-		line_size = cur_line.size();
-		//use index of slash, then start searching from there!
-
-		if (cur_line.find("///<summary>") != string::npos) {
-
-			parseString(cur_line, XML_TAGS::SUMMARY, file_stream.tellg()); //maybe here we should 
-
-		}
-			//funk.summary = parseString(cur_line,XML_TAGS::SUMMARY, file_stream.tellg())
-		 if (cur_line.find("///<return>") != string::npos)
-			parseString(cur_line, XML_TAGS::RETURN, file_stream.tellg());
-		//funk.ret_str = parseString(cur_line, XML_TAGS::RETURN, file_stream.tellg());
-		 if (cur_line.find("///<param name") != string::npos)
-			parseString(cur_line, XML_TAGS::PARAM, file_stream.tellg());
-
-	} while (!file_stream.eof());
-	
-	file_stream.close();
-	
-	return true;
-}
-
 bool XmlParse::parse(int index) {
 	
 	int size_of_vect = xml_vect.size();
@@ -116,13 +132,12 @@ bool XmlParse::parse(int index) {
 	char c = ' ';
 	string cur_line = " ";
 
-	if (file_stream.fail()) {//file hasn't been opened yet.
+	if (!file_stream.is_open()) {//file hasn't been opened yet.
 		file_stream.open(file_name);
 	}
 
 	if (file_stream.fail()) {
-		cout << "we are in error state \n";
-
+	//	cout << "we are in error state in parse \n";
 	}	
 
 	if (index >= size_of_vect)
@@ -130,24 +145,29 @@ bool XmlParse::parse(int index) {
 	
 	
 		if (index == 0)
-			beg_get_index = file_stream.beg;
-		else {
+			beg_get_index = 0;
+		else 
 			beg_get_index = xml_vect.at(index - 1).get_index;
-			end_get_index = xml_vect.at(index).get_index - xml_vect.at(index).func_decl.size() - 1;
-		
-			file_stream.seekg(beg_get_index, file_stream.beg); //put's the get and put pointers at the starting point of the function declaration.
 
-			cur_get_index = beg_get_index;
-			cout << "func: " << xml_vect.at(index).func_decl << endl;
+		end_get_index = xml_vect.at(index).get_index - xml_vect.at(index).func_decl.size() - 1;
+		file_stream.seekg(beg_get_index); //put's the get and put pointers at the starting point of the function declaration.
+		cur_get_index = beg_get_index;
 
-			while (cur_get_index < end_get_index && !file_stream.eof() && cur_get_index != -1) { //Loops as long as we do not reach the next function declaration or have not reached the end of the file.
-				file_stream.get(c);
-					cur_line += c;
-				cur_get_index = file_stream.tellg();
-			}
-			cout << cur_line << endl;
+	//	cout << "func: " << xml_vect.at(index).func_decl << endl;
+			
+		while (cur_get_index < end_get_index && !file_stream.eof() && !file_stream.fail()) { //Loops as long as we do not reach the next function declaration or have not reached the end of the file.
+				
+			file_stream.get(c);
+			cur_line += c;
+				
+			cur_get_index = file_stream.tellg();
+			if (cur_get_index == -1) {
+				cout << "Didn't work. \n";
+			} 
 
-	} 
+		}
+		parseCommentBlocks(cur_line, index);
+			//cout << cur_line << endl;
 
 	file_stream.close();
 
@@ -164,7 +184,6 @@ bool XmlParse::openFile() {
 	} else {
 
 		parseFuncName();
-	//	parse();
 		file_stream.close();
 
 		return true;
@@ -180,29 +199,36 @@ bool XmlParse::openFile(string fn) {
 		cout << "Error oppening file. \n";
 		return false;
 	} else {
-
 		parseFuncName();
-	//	parse();
+
 		file_stream.close();
 
 		return true;
 	}
-
 }
 
 bool XmlParse::setFileName(string fn) {
 
 	file_name = fn;
-	return true;
-
+	
+	file_stream.open(file_name, fstream::in);
+	
+	if (file_stream.fail())
+		return false;
+	else {
+		file_stream.close();
+		return true;
+	}
 }
 
 
 string XmlParse::cleanString(string cur_line, string patt) { //new param: string patt
 	string temp = " ";
+	
 	int str_size = cur_line.size();
 	int index = 0;
 	int patt_size = patt.size();
+	
 	index = cur_line.find(patt) + patt_size;
 
 	if (index > patt_size - 1) {
@@ -211,36 +237,9 @@ string XmlParse::cleanString(string cur_line, string patt) { //new param: string
 	}
 	else
 		return cur_line;
-	
 }
 
-
-string XmlParse::accumulateComments(string start_tag, string end_tag, string beg_line, XML_TAGS tags, int get_index) {
-	
-	beg_line = cleanString(beg_line, format);
-	string definition = beg_line;
-	string tempstr = "";
-	int start_index = 0;
-	int end_index = 0;
-
-	string accumulation_str = beg_line + "\n";
-
-	while ((definition.find(end_tag) == string::npos) && !file_stream.eof()) {
-		getline(file_stream, definition); //do while until </summary> is found.
-		definition = cleanString(definition, format);
-
-		accumulation_str += definition + "\n";
-
-	} 
-	start_index = accumulation_str.find(start_tag) + start_tag.size();
-	end_index = accumulation_str.find(end_tag,start_index);
-
-	tempstr = accumulation_str.substr(start_index, end_index - start_index);
-
-	return tempstr;
-}
-
-string XmlParse::removeWhiteSpace(string cur_line) {
+string XmlParse::retrieveRetType(string cur_line) {
 
 	int start_index = cur_line.find_first_not_of(' ');
 	int end_index = cur_line.find(' ', start_index);
@@ -252,94 +251,138 @@ string XmlParse::removeWhiteSpace(string cur_line) {
 	}
 
 	return tempstr;
-
 }
 
+void XmlParse::parseFunctionDeclaration(int vect_index) {
+	int start_index = 0;
+	int end_index = 0;
 
-void XmlParse::parseString(string line, XML_TAGS tags, int index) {
-	string func_decl = "";
-	string definition = "";
-	string var_name = "";
-	string start_tag = "";
-	string end_tag = "";
+	string tempstr = "";
+	string func_decl = xml_vect.at(vect_index).func_decl;
+
+	xml_vect.at(vect_index).ret_type = retrieveRetType(func_decl); //parses the return type.
+
+	start_index = func_decl.find(xml_vect.at(vect_index).ret_type) + xml_vect.at(vect_index).ret_type.size();
+	
+	tempstr = func_decl.substr(start_index, func_decl.size());
+	
+	end_index = tempstr.find("(");
+
+	tempstr = func_decl.substr(start_index, end_index);
+
+	xml_vect.at(vect_index).func_name = tempstr;
+
+	if (func_decl.find("const") != string::npos)
+		xml_vect.at(vect_index).isConstant = true;
+	
+}
+
+string XmlParse::accumulateComments(string start_tag, string end_tag, string beg_line, XML_TAGS tags, int get_index) {
+	
+	//beg_line = cleanString(beg_line, format);
+	string definition = beg_line;
 	string tempstr = "";
 	int start_index = 0;
 	int end_index = 0;
-	int diff_index = 0;
-	
 
-	funct_struct funk;
-	param_struct punk;
+	string accumulation_str = beg_line;
 
-	funk.isConstant = false;
-	switch (tags) {
+	start_index = beg_line.find(start_tag, get_index) + start_tag.size();
+	end_index = beg_line.find(end_tag,start_index);
+	if (end_index != string::npos)
+		tempstr = accumulation_str.substr(start_index, end_index - start_index);
+	else
+		tempstr = "Not defined.";
+	return tempstr;
+}
 
-	case (XML_TAGS::PARAM):
-		start_tag = "\">";
-		end_tag = "</param>";
+void XmlParse::parseCommentBlocks(string comments, int vect_index) {
 
-		start_index = line.find("\"", 0) + 1;
-		end_index = line.find("\"", start_index);
+	string tempstr = "";
 
-		if (start_index > -1 && end_index > -1) {
-			
-			diff_index = end_index - start_index;
-			var_name = line.substr(start_index, diff_index);
+	string start_tag = "";
+	string end_tag = "";
 
-			punk.param_name = var_name;
-			cout << "var name: " << var_name << endl;
-		}
 
-		punk.param_descript = accumulateComments(start_tag, end_tag, line, tags, index);
+	int str_beg_index = 0;
+	int str_end_index = 0;
+	int str_var_end_index = 0;
 
-		funk.param_vect.push_back(punk);
 
-		funk.num_of_param++;
-		cout << "desc: " << punk.param_descript << endl;
+	function_struct funcs;
+	param_struct params;
 
-		break;
+	//what if summary doesn't come first? The speed of the algorithm will need to be changed.
+	if (comments.find("<summary>") != string::npos) {
 
-	case (XML_TAGS::SUMMARY):
 		start_tag = "<summary>";
 		end_tag = "</summary>";
+		str_end_index = comments.find(end_tag) + end_tag.size();
 
-		funk.summary = accumulateComments(start_tag, end_tag, line, tags, index);
-		cout << funk.summary << endl;
+		tempstr = accumulateComments(start_tag, end_tag, comments, XML_TAGS::SUMMARY, 0);
+		xml_vect.at(vect_index).summary = tempstr;
+	}
 
-		break;
+	do {
+		str_beg_index = comments.find("<param name", str_beg_index);
 
-	case (XML_TAGS::RETURN):
+		if (str_beg_index != string::npos) {
+			str_beg_index = comments.find("=", str_beg_index);
+
+			if (str_beg_index != string::npos) {
+				str_beg_index = comments.find("\"", str_beg_index);
+
+				if (str_beg_index != string::npos) {
+					++str_beg_index;
+
+					start_tag = ">";
+					end_tag = "</param>";
+
+					str_var_end_index = comments.find("\"", str_beg_index);
+					tempstr = comments.substr(str_beg_index, str_var_end_index - str_beg_index);
+
+					params.param_name = tempstr;
+
+					tempstr = accumulateComments(start_tag, end_tag, comments, XML_TAGS::PARAM, str_end_index);
+
+					params.param_descript = tempstr;
+
+					//cout << "var desc: " << tempstr << endl;
+
+					xml_vect.at(vect_index).param_vect.push_back(params);
+					++xml_vect.at(vect_index).num_of_param;
+
+					str_end_index = comments.find(end_tag, str_var_end_index);
+
+				}
+			}
+		}
+	} while (str_beg_index != string::npos);
+
+	if (str_beg_index < 0) //Ensures that we are reading from a valid position in the string.
+		str_beg_index = 0;
+	else
+		str_beg_index = str_end_index; //by changing the index to the last character read, we save some processing time so chracters are not searched again.
+
+	if (comments.find("<return>", str_beg_index) != string::npos) {
 		start_tag = "<return>";
 		end_tag = "</return>";
 
-		line = cleanString(line, format);
-		funk.ret_str = accumulateComments(start_tag, end_tag, line, tags, index);
-		cout << funk.ret_str << endl;
+		str_beg_index = comments.find(start_tag, str_beg_index);
+		tempstr = accumulateComments(start_tag, end_tag, comments, XML_TAGS::RETURN, str_beg_index);
 
-		do {
-			getline(file_stream, func_decl);
+	//	cout << "return: " << tempstr << endl;
 
-		} while (func_decl.find_first_not_of(' ') == string::npos && !file_stream.eof());
-		
-		funk.ret_type = removeWhiteSpace(func_decl); //parses the return type.
 
-		start_index = func_decl.find_first_not_of(' ', funk.ret_type.size()); 
-		tempstr = func_decl.substr(start_index, func_decl.size());
-		end_index = tempstr.find("(");
-
-		tempstr = func_decl.substr(start_index, end_index);
-		funk.func_name = tempstr;
-		cout << endl<< tempstr << endl;
-		cout  << funk.ret_type;
-
-		if (func_decl.find("const") != string::npos)
-			funk.isConstant = true;
-		//  bool  fun
-		// get index of last white space, substring it until the next white space is found. then remove all whitespaces for func name.
-
-		break;
-
+		xml_vect.at(vect_index).ret_str = tempstr;
 	}
+
+	parseFunctionDeclaration(vect_index);
+
+}
+
+vector<function_struct> XmlParse::getFuncStruct() {
+	return xml_vect;
 }
 
 XmlParse::~XmlParse()
