@@ -3,18 +3,31 @@
 Notes: Runtime is o(n) where n is the number of lines.
 
 TO do: support for constructors.
-	Remove the /// from strings.
-	Tagging from function declaration. Need to get content from between the () to determine # of parameters and their types.
+	Clean up function that reads all of the funct_struct and removes the spaces from beginning and ///
 	block comment ignorance.
+
+	static implementation.
+	Inheritance
+	Make parse functions a separate cpp file?
+	Look at intial declaration of start_index and end_index for the accumulate comments function and everywhere else
 
 Changelog: Added support for pushing back summary names.
 Fixed issue where the file would be opened twice and would cause every other function's comments to be skipped and not stored.
 Added support for return types, function names, return summaries, parameter names and descriptions.
 Added a print function that prints the contents of the function_structure.
 
+Added support for constructors and deconstructors.
+Included trimPattern and trimCharacter functions that remove specified patterns and characters from a string.
+Fixed improperly formatted summary definitions.
+
 Issues: First function's comments not stored properly.
 logical issue with parseCommentBlocks function.
 Return type is a problem with the function names.
+
+Edge cases:
+class names in multiple places.
+block comments.
+extra amount of keywords for function declarations.
 
 Parameter summary for multiple parameters.
 
@@ -68,14 +81,72 @@ void XmlParse::print() {
 		cout << "Return Summary: " << xml_vect.at(i).ret_str << endl;
 
 	}
+
+	cout << "Class declaration: " << class_declaration << endl;
+	cout << "Class name: " << class_name << endl;
 }
 
+string XmlParse::trimPattern(string str, string pattern) 
+{
+	int start_index = 0;
+
+	string tempstr = str;
+
+	do {
+
+		start_index = tempstr.find(pattern, start_index);
+		if (start_index != string::npos)
+			tempstr.erase(start_index, pattern.size());
+
+	} while (start_index != string::npos);
+
+	return tempstr;
+}
+
+string XmlParse::trimCharacter(string str, char character) {
+	
+	string tempstr = str;
+	string temppattern = "" + character;
+	
+	tempstr = trimPattern(str, temppattern);
+	
+	return tempstr;
+}
+
+void XmlParse::parseClassDecl(string str_cls) {
+	int start_index = -1;
+	int end_index = -1;
+
+	start_index = str_cls.find("class");
+
+	if (start_index != string::npos) {
+		start_index = str_cls.find_first_not_of(' ', start_index + 5); // this puts the index at the start of the class name.
+		end_index = str_cls.find(':');
+
+		if (end_index == string::npos) {
+			end_index = str_cls.find_first_of(' ', start_index);
+			if (end_index == string::npos) {
+				end_index = str_cls.find('{');
+			}
+		}
+	}
+
+	if (end_index != string::npos) {
+		class_name = str_cls.substr(start_index, end_index - start_index);
+		class_name = trimCharacter(class_name, ' ');
+	}
+
+}
 
 void XmlParse::parseFuncName() {
 
 	function_struct func = initFuncStruct();
 
 	string cur_line = " ";
+	string tempstr = "";
+	int start_index = -1;
+	int end_index = -1;
+
 	long get_count = 0;
 
 	if (!file_stream.is_open()) //file hasn't been opened yet.
@@ -83,8 +154,39 @@ void XmlParse::parseFuncName() {
 
 	do {
 
+		
+
 		getline(file_stream, cur_line);
 		get_count = file_stream.tellg();
+
+		//Searches for the class declaration.
+		
+		
+		///////////////actually, the comment might not matter. Lookat again
+
+
+		if (cur_line.find("class ") != string::npos) { //The reason why I did not assign start_index to before the if statement is so that start_index is not assigned a variable every loop in conjuction with theif statement. It should slightly reduce run-time.
+			start_index = cur_line.find("class") + 5;
+			tempstr = cur_line;
+			if (cur_line.find("{") != string::npos) {
+				class_declaration = tempstr;
+				parseClassDecl(tempstr);
+				start_index = -1;
+			}
+		}
+
+		end_index = cur_line.find("{");
+
+		if (start_index > -1 && end_index != string::npos) {
+
+			tempstr += cur_line;
+			if (end_index > -1 && start_index > -1) {//both class and a  { exist. 
+				class_declaration = tempstr;
+				parseClassDecl(tempstr);
+			}
+			start_index = -1;
+			end_index = -1;
+		}
 
 		if (cur_line.find("//", 0) == string::npos && cur_line.find('(', 0) != string::npos && cur_line.find(')', 0) != string::npos) { //found ( and ) somewhere in the string. Assume the programmer has the correct file format.
 		
@@ -96,23 +198,21 @@ void XmlParse::parseFuncName() {
 
 	} while (!file_stream.eof());
 	
-	//for (unsigned int i = 0; i < xml_vect.size(); ++i) 
-	//	cout <<"get pointer: " << xml_vect.at(i).get_index << xml_vect.at(i).func_decl << endl;
-	
 	for (unsigned int i = 0; i < xml_vect.size(); ++i)
 		parse(i);
-//	cout << "size of xml_vect: " << xml_vect.size() << endl;
 
-	//print();
-
-	//file_stream.close();
 }
 
 function_struct XmlParse::initFuncStruct() {
-
+	int vect_size = xml_vect.size();
+	for (int i = 0; i < vect_size; ++i) {
+		xml_vect.pop_back();
+	}
 	function_struct func;
 	func.get_index = 0;
 	func.func_name = "Not provided.";
+	func.isConstructor = false;
+	func.isDeconstructor = false;
 	func.isConstant = false;
 	func.num_of_param = 0;
 	func.ret_str = "Not provided.";
@@ -132,6 +232,7 @@ bool XmlParse::parse(int index) {
 	char c = ' ';
 	string cur_line = " ";
 
+	
 	if (!file_stream.is_open()) {//file hasn't been opened yet.
 		file_stream.open(file_name);
 	}
@@ -161,13 +262,9 @@ bool XmlParse::parse(int index) {
 			cur_line += c;
 				
 			cur_get_index = file_stream.tellg();
-			if (cur_get_index == -1) {
-				cout << "Didn't work. \n";
-			} 
-
+			
 		}
 		parseCommentBlocks(cur_line, index);
-			//cout << cur_line << endl;
 
 	file_stream.close();
 
@@ -244,7 +341,20 @@ string XmlParse::retrieveRetType(string cur_line) {
 	int start_index = cur_line.find_first_not_of(' ');
 	int end_index = cur_line.find(' ', start_index);
 	int diff_index = end_index - start_index;
-	string tempstr = "";
+	string tempstr = "Not Defined.";
+	string decon_name = "~" + class_name;
+
+
+	if (cur_line.find(decon_name) != string::npos) {
+		tempstr = "Deconstructor.";
+		return tempstr;
+	}
+
+	if (cur_line.find(class_name) != string::npos) {
+		tempstr = "Constructor.";
+		return tempstr;
+	}
+
 
 	if (start_index != string::npos && end_index != string::npos) {
 		tempstr = cur_line.substr(start_index + 1, diff_index);
@@ -258,26 +368,37 @@ void XmlParse::parseFunctionDeclaration(int vect_index) {
 	int end_index = 0;
 
 	string tempstr = "";
+	string ret_str = "";
 	string func_decl = xml_vect.at(vect_index).func_decl;
 
 	xml_vect.at(vect_index).ret_type = retrieveRetType(func_decl); //parses the return type.
+	ret_str = xml_vect.at(vect_index).ret_type;
+	if (ret_str.compare("Constructor.") == 0) {
+		xml_vect.at(vect_index).isConstructor = true;
+		xml_vect.at(vect_index).func_name = class_name;
+	} else if (ret_str.compare("Deconstructor.") == 0) {
+		cout << "went to destructor??\n";
+		xml_vect.at(vect_index).isDeconstructor = true;
+		xml_vect.at(vect_index).func_name = "~" + class_name;
+	} else {
 
-	start_index = func_decl.find(xml_vect.at(vect_index).ret_type) + xml_vect.at(vect_index).ret_type.size();
-	
-	tempstr = func_decl.substr(start_index, func_decl.size());
-	
-	end_index = tempstr.find("(");
+		start_index = func_decl.find(xml_vect.at(vect_index).ret_type) + xml_vect.at(vect_index).ret_type.size();
 
-	tempstr = func_decl.substr(start_index, end_index);
+		tempstr = func_decl.substr(start_index, func_decl.size());
 
-	xml_vect.at(vect_index).func_name = tempstr;
+		end_index = tempstr.find("(");
 
-	if (func_decl.find("const") != string::npos)
-		xml_vect.at(vect_index).isConstant = true;
-	
+		tempstr = func_decl.substr(start_index, end_index);
+
+		xml_vect.at(vect_index).func_name = tempstr;
+
+		if (func_decl.find("const") != string::npos)
+			xml_vect.at(vect_index).isConstant = true;
+	}
 }
 
-string XmlParse::accumulateComments(string start_tag, string end_tag, string beg_line, XML_TAGS tags, int get_index) {
+
+string XmlParse::accumulateComments(string start_tag, string end_tag, string beg_line, int get_index) {
 	
 	//beg_line = cleanString(beg_line, format);
 	string definition = beg_line;
@@ -289,9 +410,10 @@ string XmlParse::accumulateComments(string start_tag, string end_tag, string beg
 
 	start_index = beg_line.find(start_tag, get_index) + start_tag.size();
 	end_index = beg_line.find(end_tag,start_index);
-	if (end_index != string::npos)
+	if (end_index != string::npos) {
 		tempstr = accumulation_str.substr(start_index, end_index - start_index);
-	else
+		tempstr = trimPattern(tempstr, format);
+	} else
 		tempstr = "Not defined.";
 	return tempstr;
 }
@@ -319,7 +441,7 @@ void XmlParse::parseCommentBlocks(string comments, int vect_index) {
 		end_tag = "</summary>";
 		str_end_index = comments.find(end_tag) + end_tag.size();
 
-		tempstr = accumulateComments(start_tag, end_tag, comments, XML_TAGS::SUMMARY, 0);
+		tempstr = accumulateComments(start_tag, end_tag, comments, 0);
 		xml_vect.at(vect_index).summary = tempstr;
 	}
 
@@ -335,19 +457,18 @@ void XmlParse::parseCommentBlocks(string comments, int vect_index) {
 				if (str_beg_index != string::npos) {
 					++str_beg_index;
 
-					start_tag = ">";
+					start_tag = "\">";
 					end_tag = "</param>";
 
 					str_var_end_index = comments.find("\"", str_beg_index);
 					tempstr = comments.substr(str_beg_index, str_var_end_index - str_beg_index);
-
+					
+					//tempstr.erase(' ', string::npos);
 					params.param_name = tempstr;
 
-					tempstr = accumulateComments(start_tag, end_tag, comments, XML_TAGS::PARAM, str_end_index);
+					tempstr = accumulateComments(start_tag, end_tag, comments, str_end_index);
 
 					params.param_descript = tempstr;
-
-					//cout << "var desc: " << tempstr << endl;
 
 					xml_vect.at(vect_index).param_vect.push_back(params);
 					++xml_vect.at(vect_index).num_of_param;
@@ -363,16 +484,13 @@ void XmlParse::parseCommentBlocks(string comments, int vect_index) {
 		str_beg_index = 0;
 	else
 		str_beg_index = str_end_index; //by changing the index to the last character read, we save some processing time so chracters are not searched again.
-
-	if (comments.find("<return>", str_beg_index) != string::npos) {
+		
+	if (comments.find("<return>") != string::npos) {
 		start_tag = "<return>";
 		end_tag = "</return>";
 
 		str_beg_index = comments.find(start_tag, str_beg_index);
-		tempstr = accumulateComments(start_tag, end_tag, comments, XML_TAGS::RETURN, str_beg_index);
-
-	//	cout << "return: " << tempstr << endl;
-
+		tempstr = accumulateComments(start_tag, end_tag, comments, str_beg_index);
 
 		xml_vect.at(vect_index).ret_str = tempstr;
 	}

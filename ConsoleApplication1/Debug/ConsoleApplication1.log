@@ -1,4 +1,4 @@
 ﻿  XmlParse.cpp
-c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(87): warning C4244: '=': conversion from 'std::streamoff' to 'long', possible loss of data
-c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(163): warning C4244: '=': conversion from 'std::streamoff' to 'long', possible loss of data
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(156): warning C4244: '=': conversion from 'std::streamoff' to 'long', possible loss of data
+c:\users\kali-zoidberg\documents\github\consoleapplication1\consoleapplication1\xmlparse.cpp(260): warning C4244: '=': conversion from 'std::streamoff' to 'long', possible loss of data
   ConsoleApplication1.vcxproj -> C:\Users\Kali-Zoidberg\Documents\GitHub\ConsoleApplication1\Debug\XMLGeneration.exe

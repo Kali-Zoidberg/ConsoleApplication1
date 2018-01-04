@@ -19,13 +19,15 @@ struct param_struct {
 	string param_name;
 	string param_descript;
 };
-
 struct function_struct {
+	
 	string func_decl;
 	string func_name;
 	string summary;
 	int num_of_param;
 	vector<param_struct> param_vect;
+	bool isConstructor;
+	bool isDeconstructor;
 	bool isConstant;
 	string ret_type;
 	string ret_str; //look for type after return found. If void ...
@@ -33,8 +35,11 @@ struct function_struct {
 
 };
 
-class XmlParse
+class XmlParse 
 {
+
+	//classy {
+
 	/*
 
 	Parsing file. Do get line until eof. Check each line and stop loop if /// is not found.
@@ -86,7 +91,24 @@ public:
 	///Parses the function names from the source file and creates vectors for each one.
 	///The lines between the functions are then parsed.
 	///</summary>
+
+	///<summary>
+	///Trims a specified pattern of characters (or one) from a string. 
+	///</summary>
+	///<param name = "str"> The string to trim. </param>
+	///<param name = "pattern"> The patter to trim from the string. </param>
+	///<return> Returns the trimmed string. </return>
+	string trimPattern(string str, string pattern);
 	
+
+	///<summary>
+	///Removes all of the specified characters from a string.
+	///</summary>
+	///<param name = "str"> The string to trim. </param>
+	///<param name = "c"> The character to erase from the string.
+	///<return> Returns the newly trimmed string. </return>
+	string trimCharacter(string str, char character);
+
 	void parseFuncName();
 
 
@@ -127,6 +149,8 @@ private:
 	const string format = "///";
 	string file_name;
 	ifstream file_stream;
+	string class_declaration;
+	string class_name;
 	int vect_index;
 
 	///<summary>
@@ -167,6 +191,12 @@ private:
 
 
 	///<summary>
+	///Parses the class declaration to retrieve the inheritance and class name.
+	///</summary>
+	///<param name="str_cls"> The class delcaration to parse. </param>
+	void parseClassDecl(string str_cls);
+
+	///<summary>
 	///Accumulates the comments between the xml start and end tag.
 	///</summary>
 	///<param name = "start_tag"> The format for the starting tag. </param>
@@ -176,7 +206,7 @@ private:
 	///<param name = "get_index"> The current position of the get pointer in the stream. </param>
 	///<return> Returns the comments between the starting and ending tags. </return>
 
-	string accumulateComments(string start_tag, string end_tag, string cur_line, XML_TAGS cur_tag, int get_index);
+	string accumulateComments(string start_tag, string end_tag, string cur_line, int get_index);
 
 	///<summary>
 	///Parses all the comments belonging to the function at vect_index in the xml_vect vector.
@@ -190,5 +220,3 @@ private:
 	
 };
 #endif // ! XML_PARSE_H
-
-
