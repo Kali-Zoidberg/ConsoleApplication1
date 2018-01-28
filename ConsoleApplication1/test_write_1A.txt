@@ -1,0 +1,20 @@
+F.XmlParse.Constructor.false.0
+F.XmlParse.Constructor.false.1
+F.~XmlParse.Destructor.false.0
+F.print.void .false.0
+F.writeToFile.bool .false.1
+F.parse.bool .false.0
+F.trimPattern.string .false.2
+F.trimCharacter.string .false.2
+F.parseFuncName.void .false.0
+F.openFile.bool .false.1
+F.openFile.bool .false.0
+F.setFileName.bool .false.0
+F.getFuncStruct.vector<function_struct> .false.0
+F.cleanString.string .false.2
+F.initFuncStruct.function_struct .false.0
+F.retrieveRetType.string .false.1
+F.parseFunctionDeclaration.void .false.1
+F.parseClassDecl.void .false.1
+F.accumulateComments.string .false.5
+F.parseCommentBlocks.void .false.2

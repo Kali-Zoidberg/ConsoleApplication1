@@ -27,7 +27,7 @@ struct function_struct {
 	int num_of_param;
 	vector<param_struct> param_vect;
 	bool isConstructor;
-	bool isDeconstructor;
+	bool isDestructor;
 	bool isConstant;
 	string ret_type;
 	string ret_str; //look for type after return found. If void ...
@@ -76,6 +76,12 @@ public:
 	///</summary>
 	
 	void print();
+
+	///<summary>
+	///Writes the parsed source file's content to the file specified by file_name.
+	///</summary>
+	///<param name = "file_name"> The file name to which the source file's content will be written. </param>
+	bool writeToFile(string file_name);
 
 	///<summary>
 	///Parses a source file and generates an html document.
